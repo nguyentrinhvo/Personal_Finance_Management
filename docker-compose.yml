@@ -18,7 +18,7 @@ services:
     build:
       context: ./FE
       args:
-        - VITE_API_BASE_URL=https://fifl.me
+        - VITE_API_BASE_URL=${VITE_API_BASE_URL:-http://localhost:8080}
     container_name: finflow-frontend
     restart: always
     ports:
