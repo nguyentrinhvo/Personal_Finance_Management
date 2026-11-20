@@ -33,24 +33,24 @@ const LandingPage = () => {
 
   const faqs = [
     {
-      question: "How secure is my financial data with FinFlow?",
-      answer: "We use bank-level 256-bit AES encryption and multi-factor authentication to ensure your data stays private and secure. Your financial information is never shared with third parties."
+      question: "How do I manage my accounts and wallets in FinFlow?",
+      answer: "You can create and track multiple custom accounts across Bank, E-Wallet, Cash, Investment, and Credit categories. Account balances automatically synchronize in real time whenever you add, edit, or delete a transaction."
     },
     {
-      question: "Can I integrate my existing bank accounts?",
-      answer: "Yes! FinFlow supports integration with over 10,000 financial institutions worldwide through our secure banking API partners."
+      question: "How does the AI Financial Assistant help me log transactions?",
+      answer: "Our built-in AI assistant lets you record, edit, or delete income and expenses using natural language chat, Vietnamese voice commands, or receipt photos—backed by an offline keyword fallback engine for uninterrupted tracking."
     },
     {
-      question: "What reporting formats are available?",
-      answer: "You can export your data and reports in PDF, Excel (XLSX), and CSV formats, making it easy to share with your accountant or import into other tools."
+      question: "What financial reports and export formats are available?",
+      answer: "FinFlow offers interactive visual analytics—including monthly inflow and outflow bar charts, category spending donut charts, and 7-day trend sparklines—plus one-click export of your transaction ledger to Excel (.xlsx) format."
     },
     {
-      question: "Is there a mobile app for iOS and Android?",
-      answer: "Our web platform is fully responsive and works perfectly on mobile browsers. We are currently developing native apps for both iOS and Android, coming later this year."
+      question: "How do category budgets and savings goals work?",
+      answer: "You can set monthly spending limits for each expense category with visual progress bars and over-budget alerts, as well as create savings goals to allocate funds incrementally and track your completion percentage."
     },
     {
-      question: "Can I cancel my subscription anytime?",
-      answer: "Absolutely. We offer a month-to-month subscription with no long-term contracts. You can cancel or change your plan at any time from your account settings."
+      question: "Is FinFlow free to use, and how is my account secured?",
+      answer: "FinFlow is completely free with no subscription fees, and you can explore it instantly via Live Demo mode. Your account is protected with BCrypt password hashing through Spring Security, keeping your financial data isolated."
     }
   ];
 
