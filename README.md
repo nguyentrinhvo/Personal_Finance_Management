@@ -1,22 +1,84 @@
-# FinFlow – Personal Finance Management
+# FinFlow – AI-Powered Personal Finance Management Platform
 
-## Short Description
+[![Live UI Demo](https://img.shields.io/badge/Live_UI_Demo-Vercel-000000?style=for-the-badge&logo=vercel)](https://ss-2-final-personal-finance-managem.vercel.app/)
+[![Java](https://img.shields.io/badge/Java-21-007396?style=for-the-badge&logo=openjdk)](https://adoptium.net/)
+[![Spring Boot](https://img.shields.io/badge/Spring_Boot-4.0.4-6DB33F?style=for-the-badge&logo=springboot)](https://spring.io/projects/spring-boot)
+[![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react)](https://react.dev/)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker)](https://www.docker.com/)
 
-Many individuals struggle to maintain awareness of their daily spending, leading to poor financial decisions and unmet savings goals. **FinFlow** was built to address this problem by providing a unified platform for personal finance management, targeting university students and young professionals who need a simple yet powerful tool to track income, expenses, budgets, and savings goals. 
+## Overview
 
-The final product is a full-stack web application featuring interactive dashboards, visual reports, Excel import/export, and a "Hybrid" AI-powered chatbot (Google Gemini + Offline Regex Fallback) that delivers personalized financial advice and automates data entry. The system is deployed live with secure authentication.
+**FinFlow** is a full-stack personal finance management web application designed to help individuals track multi-wallet balances, control monthly category budgets, monitor savings goals, and analyze cash-flow trends in real time.
+
+To eliminate the friction of manual bookkeeping, FinFlow integrates a **Hybrid Multimodal AI Financial Assistant** powered by **Google Gemini AI** and the **Web Speech API**, enabling users to log, edit, or delete transactions using natural language text, Vietnamese voice commands, or receipt photos—backed by an **Offline Regex & Keyword Fallback Engine** that ensures uninterrupted functionality even when external AI APIs hit rate limits.
 
 ---
 
-## Member List
+## Live Demo
 
-| No. | Full Name | Student ID | Main Responsibility |
-|-----|-----------|------------|---------------------|
-| 1   | Nguyễn Trịnh Võ | 2301040201| Fullstack Developer (FE, BE, AI, Deployment) |
-| 2   | Lương Việt Anh | 2301040004 | System Analysis & Documentation (SRS, ERD) |
-| 3   | Nguyễn Cao Phong | 2301040146 | UI/UX Design & Presentation (Figma, Slides) |
+| Environment | Details |
+|---|---|
+| **Live UI Preview (Vercel)** | [https://ss-2-final-personal-finance-managem.vercel.app/](https://ss-2-final-personal-finance-managem.vercel.app/) |
+| **Interactive Sandbox Mode** | Scroll to the bottom of the landing page and click **"Try Live Demo"** to explore the dashboard, analytics charts, and Excel export immediately with preloaded sample data (no backend/login required). |
+| **Full-Stack Mode (AI + DB)** | Run locally via `docker-compose up -d --build` or Maven + Vite (see [Getting Started](#getting-started)). |
 
+---
 
+## System Architecture
+
+```mermaid
+flowchart LR
+    subgraph Client["Frontend (React 19 + Vite + Nginx)"]
+        UI["Dashboard & Recharts Analytics"]
+        Voice["Web Speech API (vi-VN)"]
+        Excel["SheetJS (.xlsx Export)"]
+    end
+
+    subgraph Server["Backend (Spring Boot 4 / Java 21)"]
+        API["REST Controllers"]
+        TrxSvc["Transaction & Account Services (@Transactional)"]
+        BotSvc["Hybrid Chatbot Service (Gemini + Offline Regex Engine)"]
+        Sec["Spring Security (BCrypt & CORS)"]
+    end
+
+    subgraph Cloud["Cloud Infrastructure & External APIs"]
+        DB[("TiDB Cloud (MySQL)")]
+        Gemini["Google Gemini Multimodal API"]
+        Cloudinary["Cloudinary CDN"]
+    end
+
+    UI <-->|REST JSON / Multipart| API
+    Voice --> UI
+    UI --> Excel
+    API --> Sec
+    API --> TrxSvc
+    API --> BotSvc
+    TrxSvc <-->|Spring Data JPA| DB
+    BotSvc <-->|Text & Receipt Image| Gemini
+    API <-->|Avatar & Cover Upload| Cloudinary
+```
+
+---
+
+## Key Features & Engineering Highlights
+
+- **Multi-Wallet & ACID Transaction Ledger**
+  - Manage multiple financial accounts (`BANK`, `E-WALLET`, `CASH`, `INVESTMENT`, `CREDIT`).
+  - Automatic balance synchronization using `@Transactional`: creating, updating (including switching wallets or transaction types), or deleting a transaction atomically adjusts the corresponding account balances.
+- **Hybrid Multimodal AI Financial Assistant**
+  - **Natural Language & Voice Input:** Record income/expenses or query financial summaries via chat or hands-free Vietnamese voice recognition (`Web Speech API`).
+  - **Receipt Image Recognition:** Upload bill/receipt images directly into the chat for multimodal extraction via `google-genai` SDK.
+  - **Automated Action Execution:** Parses structured action tags (`[ADD_TRX]`, `[EDIT_TRX]`, `[DELETE_TRX]`, `[SUMMARY]`) to mutate ledger data and trigger real-time UI resynchronization.
+  - **Offline Regex & Keyword Fallback:** Automatically falls back to a deterministic regex and Vietnamese keyword-matching engine (`ăn uống`, `đi lại`, `hóa đơn`, `mua sắm`, `lương`, etc.) if the Gemini API quota is exhausted (`HTTP 429`).
+- **Interactive Financial Analytics & Excel Export**
+  - Visualizes monthly inflow/outflow momentum, 7-day sparklines, net savings rate, and category expense breakdown using **Recharts**.
+  - One-click export of the transaction ledger to `.xlsx` spreadsheets using **SheetJS (`xlsx`)**.
+- **Budget & Savings Goal Tracking**
+  - Set monthly category spending limits with visual progress bars and over-budget alerts.
+  - Create savings goals, track completion percentages, and allocate funds incrementally.
+- **Cloud Media & Containerized Deployment**
+  - Image upload pipeline integrated with **Cloudinary** for user avatars, budget covers, and custom categories.
+  - Fully containerized with multi-stage **Dockerfiles** (Maven/Eclipse Temurin JRE 21 for Backend; Node 20/Nginx Alpine for Frontend) orchestrated via **Docker Compose**.
 
 ---
 
@@ -25,233 +87,147 @@ The final product is a full-stack web application featuring interactive dashboar
 ### Frontend
 | Technology | Version | Purpose |
 |---|---|---|
-| React | 19 | UI Framework |
-| Vite | 8 | Build tool & dev server |
-| Tailwind CSS | v4 | Utility-first styling |
-| React Router DOM | v7 | Client-side routing |
-| Recharts | v3 | Interactive charts |
-| Axios | v1 | HTTP client |
-| Lucide React | v1 | Icon library |
-| React Markdown | v10 | Render AI chat responses |
-| XLSX | v0.18 | Excel import/export |
-| React Hot Toast | v2 | Toast notifications |
+| React | 19.2 | Component-based UI framework |
+| Vite | 8.0 | Frontend build tool & dev server |
+| Tailwind CSS | 4.2 | Utility-first responsive styling |
+| React Router DOM | 7.13 | SPA client-side routing |
+| Recharts | 3.8 | Financial data visualization (Bar, Pie/Donut, Sparklines) |
+| Axios | 1.13 | HTTP client for REST API communication |
+| SheetJS (`xlsx`) | 0.18 | Client-side Excel report generation |
+| React Markdown | 10.1 | Formatting AI assistant responses |
+| Lucide React & React Hot Toast | Latest | Icons & toast notification feedback |
 
 ### Backend
 | Technology | Version | Purpose |
 |---|---|---|
-| Spring Boot | 4.0.4 | Application framework |
-| Java | 21 | Programming language |
-| Spring Security | — | Authentication & authorization (BCrypt) |
-| Spring Data JPA | — | ORM / database access |
-| MySQL (TiDB Cloud) | — | Relational cloud database |
-| Google Gen AI SDK | 1.46.0 | Gemini AI integration |
-| Cloudinary | 2.0.0 | Cloud image/file storage |
-| Lombok | — | Boilerplate reduction |
-| dotenv-java | 3.1.0 | `.env` file loading |
+| Java | 21 (LTS) | Core backend language |
+| Spring Boot | 4.0.4 | REST API & dependency injection framework |
+| Spring Data JPA / Hibernate | — | ORM & automated schema management |
+| Spring Security | — | Password hashing (`BCryptPasswordEncoder`) & CORS policy |
+| Google Gen AI SDK (`google-genai`) | 1.46.0 | Multimodal Gemini AI integration |
+| Cloudinary SDK (`cloudinary-http5`) | 2.0.0 | Cloud image storage |
+| MySQL Connector/J | Runtime | Connectivity to TiDB Cloud / MySQL |
+| Lombok & `dotenv-java` | Latest | Boilerplate reduction & `.env` configuration loading |
 
-### Infrastructure
+### DevOps & Infrastructure
 | Tool | Purpose |
 |---|---|
-| Docker & Docker Compose | Containerized deployment on VPS |
-| Maven Wrapper (`mvnw`) | Dependency management & build |
-| Vercel | Secondary frontend hosting |
-| Nginx | Reverse proxy for VPS deployment |
+| Docker & Docker Compose | Multi-container build & VPS deployment |
+| Nginx | Static asset serving & SPA fallback routing |
+| TiDB Cloud | Serverless distributed MySQL database |
+| Vercel | Secondary frontend CDN hosting |
 
 ---
 
-## Main Features
-
-- **Account Management** – Create and manage multiple financial accounts (bank, cash, e-wallet, etc.)
-- **Transaction Tracking** – Log income and expense transactions with categories, dates, and notes
-- **Visual Reports** – Analyze spending and income with interactive pie charts and bar charts
-- **Savings Goals** – Set financial goals and track progress towards them
-- **Budget Management** – Define monthly budgets per category and monitor usage
-- **Category Management** – Customize income and expense categories
-- **Hybrid AI Financial Chatbot** – Chat with Gemini AI for advice, or use offline commands to automate transaction logging (even when the API hits rate limits).
-- **Secure Authentication** – Register/Login with email-password, and basic forgot password support.
-- **Profile & Avatar** – Update user profile and upload avatar via Cloudinary
-- **Excel Export/Import** – Export transactions to `.xlsx` and import bulk data
-- **Responsive UI** – Mobile-friendly interface with dark mode support
-
----
-
-## Overall Project Structure
+## Project Structure
 
 ```text
-personal-finance-manangement/
-├── BE/                                   # Backend – Spring Boot
+FinFlow/
+├── BE/                                   # Backend – Spring Boot 4 (Java 21)
 │   ├── src/main/java/com/example/FinFlow/
-│   │   ├── config/               # Security (CORS), App config
-│   │   ├── controller/           # REST APIs (Auth, Chatbot, Transactions...)
-│   │   ├── dto/                  # Request/Response DTOs
-│   │   ├── model/                # JPA Entities (User, Account, Category...)
-│   │   ├── repository/           # Spring Data JPA repositories
-│   │   └── service/              # Business logic (e.g., ChatbotService with Offline Fallback)
-│   ├── Dockerfile
-│   ├── pom.xml
-│   ├── mvnw / mvnw.cmd
-│   └── .env                              # Backend environment variables
+│   │   ├── config/                       # SecurityConfig (BCrypt, CORS), WebConfig
+│   │   ├── controller/                   # REST Controllers (Auth, Account, Transaction, Budget, Goal, Chatbot, File)
+│   │   ├── dto/                          # Data Transfer Objects
+│   │   ├── model/                        # JPA Entities (User, Account, Transaction, Category, Budget, Goal)
+│   │   ├── repository/                   # Spring Data JPA Repositories
+│   │   └── service/                      # Business Logic (TransactionService, ChatbotService, CloudinaryService...)
+│   ├── src/main/resources/
+│   │   └── application.properties        # Spring Boot & JPA configuration
+│   ├── Dockerfile                        # Multi-stage Maven build -> Eclipse Temurin 21 JRE
+│   └── pom.xml
 │
-├── FE/                                   # Frontend – React + Vite
+├── FE/                                   # Frontend – React 19 + Vite 8
 │   ├── src/
-│   │   ├── components/                   # Charts, AI Chat, UI elements
-│   │   ├── pages/                        # Auth & Dashboard views
-│   │   └── utils/                        # Axios instance, helpers
-│   ├── Dockerfile
-│   ├── package.json
-│   ├── vite.config.js
-│   └── .env                              # Frontend environment variables
+│   │   ├── components/
+│   │   │   ├── chat/                     # FloatingChatbot (Gemini + Voice + Receipt Image upload)
+│   │   │   ├── common/                   # Navbar, SideBar, Input
+│   │   │   ├── dashboard/                # SpendingTrendChart, ActiveGoals, TransactionTable
+│   │   │   ├── layout/                   # DashboardLayout
+│   │   │   └── ui/                       # StatCard with sparklines
+│   │   ├── pages/
+│   │   │   ├── auth/                     # Login, Register, ForgotPassword
+│   │   │   ├── dashboard/                # Home, Accounts, Transactions, Budgets, Goals, Categories, Reports, Profile
+│   │   │   └── LandingPage.jsx
+│   │   └── utils/                        # API base configuration & mock data for Demo Mode
+│   ├── Dockerfile                        # Multi-stage Node 20 build -> Nginx Alpine
+│   └── package.json
 │
-├── docker-compose.yml                    # Orchestrate BE + FE containers for VPS
+├── docker-compose.yml                    # Full-stack container orchestration
+├── render.yaml                           # Render deployment blueprint
 └── README.md
 ```
 
 ---
 
-## Installation – Required Tools
+## Getting Started
 
-Make sure the following are installed before running the project:
+### Prerequisites
+- **Java JDK 21** ([Adoptium](https://adoptium.net/))
+- **Node.js ≥ 18** ([nodejs.org](https://nodejs.org/))
+- **Docker & Docker Compose** (optional, for containerized run)
 
-| Tool | Version | Download |
-|---|---|---|
-| Node.js | ≥ 18 | https://nodejs.org |
-| JDK (Java) | 21 | https://adoptium.net |
-| Docker & Docker Compose | Latest | https://www.docker.com (optional) |
-| Git | Any | https://git-scm.com |
+### 1. Environment Configuration
 
-> Maven is **not required** globally — the project includes `mvnw` / `mvnw.cmd` wrappers.
-
----
-
-## Environment Variable Setup using `.env.example`
-
-### Backend — `BE/.env`
-
-Create a file at `BE/.env` with the following content:
-
+Create `BE/.env` for the backend:
 ```env
-# ──────────────────────────────────────────────
-# Google Gemini AI
-# ──────────────────────────────────────────────
-GEMINI_API_KEY=your_gemini_api_key_here
+# Database (MySQL / TiDB Cloud)
+SPRING_DATASOURCE_URL=jdbc:mysql://<host>:<port>/FinFlow?createDatabaseIfNotExist=true&useSSL=true&allowPublicKeyRetrieval=true&serverTimezone=UTC
+SPRING_DATASOURCE_USERNAME=your_db_username
+SPRING_DATASOURCE_PASSWORD=your_db_password
 
-# ──────────────────────────────────────────────
-# Cloudinary (image/file storage)
-# ──────────────────────────────────────────────
+# Google Gemini AI (Optional — falls back to Offline Regex mode if omitted)
+GEMINI_API_KEY=your_gemini_api_key
+
+# Cloudinary Media Storage
 CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
 CLOUDINARY_API_KEY=your_cloudinary_api_key
 CLOUDINARY_API_SECRET=your_cloudinary_api_secret
-
-# ──────────────────────────────────────────────
-# Database — TiDB Cloud
-# ──────────────────────────────────────────────
-SPRING_DATASOURCE_URL=jdbc:mysql://<gateway>:<port>/FinFlow?createDatabaseIfNotExist=true&useSSL=true&allowPublicKeyRetrieval=true&serverTimezone=UTC
-SPRING_DATASOURCE_USERNAME=your_db_username
-SPRING_DATASOURCE_PASSWORD=your_db_password
 ```
 
-### Frontend — `FE/.env`
-
-Create a file at `FE/.env` with the following content:
-
+Create `FE/.env` for the frontend:
 ```env
-# API base URL — point to your running backend
 VITE_API_BASE_URL=http://localhost:8080
 ```
 
----
+### 2. Run Locally (Development)
 
-## Database Setup / Migration / Seeding
-
-FinFlow uses **Spring Data JPA** with `hibernate.ddl-auto=update`.
-
-- On first startup, the backend **automatically creates** the `FinFlow` database and **generates all required tables** from JPA entity classes.
-- **No manual SQL scripts** are needed for schema setup.
-- There is **no seed data** by default — use the application UI or Register to create your first user account.
-
----
-
-## How to Run Frontend
-
+**Start the Backend (`http://localhost:8080`):**
 ```bash
-# 1. Navigate to the frontend directory
+cd BE
+./mvnw spring-boot:run        # Linux / macOS
+mvnw.cmd spring-boot:run      # Windows
+```
+> Hibernate (`ddl-auto=update`) automatically initializes the schema and seeds default income/expense categories on first boot.
+
+**Start the Frontend (`http://localhost:5173` or `http://localhost:3000`):**
+```bash
 cd FE
-
-# 2. Install dependencies
 npm install
-
-# 3. Start the development server
 npm run dev
 ```
 
-The frontend will be available at: `http://localhost:3000`
-
----
-
-## How to Run Backend
+### 3. Run with Docker Compose
 
 ```bash
-# 1. Navigate to the backend directory
-cd BE
-
-# 2. Make sure BE/.env is configured (see above)
-
-# 3. Run using Maven Wrapper (Linux/macOS)
-./mvnw spring-boot:run
-
-# 3. Run using Maven Wrapper (Windows)
-mvnw.cmd spring-boot:run
+docker-compose up -d --build
 ```
-
-The backend API will be available at: `http://localhost:8080`
-
----
-
-## How to Run the Full System from a Clean Machine
-
-### Option A – Manual (Recommended for development)
-
-1. Clone the repository: `git clone <repository-url>`
-2. Set up environment files (`BE/.env` and `FE/.env`).
-3. Open two terminal windows:
-   - **Terminal 1 (Backend):** `cd BE` -> `./mvnw spring-boot:run`
-   - **Terminal 2 (Frontend):** `cd FE` -> `npm install` -> `npm run dev`
-
-### Option B – Docker Compose (for quick setup / production-like)
-
-1. Clone the repository.
-2. Create the root `.env` file (copy from `.env.example` if available, or populate with actual credentials).
-3. Build and start all services:
-   ```bash
-   docker-compose up -d --build
-   ```
-
-| Service | URL |
-|---|---|
-| Frontend | http://localhost:3000 |
-| Backend API | http://localhost:8080 |
-
-To stop: `docker-compose down`
+- **Frontend:** `http://localhost:3000`
+- **Backend API:** `http://localhost:8080`
 
 ---
 
-## Demo Account
+## Roadmap & Future Enhancements
 
-The application is **live** and publicly accessible.
-
-| | |
-|---|---|
-| **Live URL** | https://fifl.me/ |
-| **Vercel Mirror** | https://ss-2-final-personal-finance-managem.vercel.app/ |
-| **Test account** | `testaccount` / `123123` |
-
-> Alternatively, click **"Try live demo"** on the landing page or use **Register** to create a free account.
+- **Stateless JWT Authentication & RBAC:** Implement `OncePerRequestFilter` with signed JWT access/refresh tokens to replace URL-based `userId` parameters and prevent IDOR vulnerabilities.
+- **Server-Side Pagination & SQL Aggregations:** Migrate client-side monthly filtering to Spring Data `Pageable` endpoints and JPQL `SUM() ... GROUP BY` queries for high-volume transaction datasets.
+- **AI Function Calling & Rate-Limit Circuit Breaker:** Upgrade regex tag parsing to Gemini Structured Outputs / Tool Calling and add a time-windowed cooldown for `HTTP 429` fallback recovery.
+- **Email OTP Password Recovery:** Integrate `JavaMailSender` with time-bound reset tokens for secure password recovery.
+- **Automated Testing & CI/CD:** Add JUnit 5 + Mockito unit tests for `TransactionService` and `ChatbotService`, integrated into a GitHub Actions pipeline.
 
 ---
 
-## Known Issues & Limitations
+## Author
 
-- **API Cold Starts** — The free-tier TiDB Cloud and Gemini AI API often enter "sleep mode". The first request of a session may take 3–8 seconds.
-- **Forgot Password Security** — The current "Forgot Password" feature resets passwords directly via API without email/OTP verification, posing a security risk.
-- **Lack of CI/CD pipeline** — Deployments are currently manual; the project lacks automated unit testing (e.g., JUnit/Jest) via GitHub Actions.
-- **Excel import validation** — Importing `.xlsx` files with unexpected column formats may silently skip invalid rows. Ensure the file matches the exported template.
+- **Nguyễn Trịnh Võ** – *Full-Stack Developer* (System Design, Backend Architecture, Frontend UI/UX, Hybrid Gemini AI Integration, Cloud & Docker Deployment)
+  - GitHub: [@nguyentrinhvo](https://github.com/nguyentrinhvo)
+  - Email: [nguyentrinhvo01012005@gmail.com](mailto:nguyentrinhvo01012005@gmail.com)
