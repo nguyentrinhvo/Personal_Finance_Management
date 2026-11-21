@@ -2,16 +2,27 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import { API_BASE_URL } from '../../utils/api';
+import ColdStartNotice from '../../components/common/ColdStartNotice';
 
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isWakingUp, setIsWakingUp] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    if (isLoading) return;
+
+    setIsLoading(true);
+    setIsWakingUp(false);
+    const coldStartTimer = setTimeout(() => {
+      setIsWakingUp(true);
+    }, 2500);
+
     try {
       const response = await axios.post(`${API_BASE_URL}/api/auth/login`, {
         username,
@@ -26,6 +37,10 @@ const Login = () => {
       navigate('/dashboard');
     } catch (error) {
       toast.error(error.response?.data?.error || 'Invalid username or password');
+    } finally {
+      clearTimeout(coldStartTimer);
+      setIsLoading(false);
+      setIsWakingUp(false);
     }
   };
 
@@ -92,12 +107,22 @@ const Login = () => {
             </div>
           </div>
 
+          <ColdStartNotice isWakingUp={isWakingUp} />
+
           <div className="pt-2">
             <button
               type="submit"
-              className="w-full flex justify-center py-4 px-4 bg-[#a33900] hover:bg-[#c04a00] text-white text-sm font-black rounded-2xl transition-all active:scale-[0.98] shadow-xl shadow-orange-900/10 uppercase tracking-[0.2em]"
+              disabled={isLoading}
+              className="w-full flex items-center justify-center gap-2 py-4 px-4 bg-[#a33900] hover:bg-[#c04a00] disabled:opacity-70 disabled:cursor-not-allowed text-white text-sm font-black rounded-2xl transition-all active:scale-[0.98] shadow-xl shadow-orange-900/10 uppercase tracking-[0.2em]"
             >
-              Login
+              {isLoading ? (
+                <>
+                  <Loader2 size={18} className="animate-spin" />
+                  {isWakingUp ? 'Waking up server...' : 'Logging in...'}
+                </>
+              ) : (
+                'Login'
+              )}
             </button>
           </div>
         </form>

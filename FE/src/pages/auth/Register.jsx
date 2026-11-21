@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import { API_BASE_URL } from '../../utils/api';
+import ColdStartNotice from '../../components/common/ColdStartNotice';
 
 const Register = () => {
   const [fullname, setFullname] = useState('');
@@ -11,14 +12,24 @@ const Register = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isWakingUp, setIsWakingUp] = useState(false);
   const navigate = useNavigate();
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    if (isLoading) return;
+
     if (password !== confirmPassword) {
       toast.error('Passwords do not match!');
       return;
     }
+
+    setIsLoading(true);
+    setIsWakingUp(false);
+    const coldStartTimer = setTimeout(() => {
+      setIsWakingUp(true);
+    }, 2500);
 
     try {
       const response = await axios.post(`${API_BASE_URL}/api/auth/register`, {
@@ -32,6 +43,10 @@ const Register = () => {
       navigate('/');
     } catch (error) {
       toast.error(error.response?.data?.error || 'Registration failed. Please try again.');
+    } finally {
+      clearTimeout(coldStartTimer);
+      setIsLoading(false);
+      setIsWakingUp(false);
     }
   };
 
@@ -118,12 +133,22 @@ const Register = () => {
             </div>
           </div>
 
+          <ColdStartNotice isWakingUp={isWakingUp} />
+
           <div className="pt-2">
             <button
               type="submit"
-              className="w-full flex justify-center py-4 px-4 bg-[#a33900] hover:bg-[#c04a00] text-white text-sm font-black rounded-2xl transition-all active:scale-[0.98] shadow-xl shadow-orange-900/10 uppercase tracking-[0.2em]"
+              disabled={isLoading}
+              className="w-full flex items-center justify-center gap-2 py-4 px-4 bg-[#a33900] hover:bg-[#c04a00] disabled:opacity-70 disabled:cursor-not-allowed text-white text-sm font-black rounded-2xl transition-all active:scale-[0.98] shadow-xl shadow-orange-900/10 uppercase tracking-[0.2em]"
             >
-              Register
+              {isLoading ? (
+                <>
+                  <Loader2 size={18} className="animate-spin" />
+                  {isWakingUp ? 'Waking up server...' : 'Registering...'}
+                </>
+              ) : (
+                'Register'
+              )}
             </button>
           </div>
         </form>
